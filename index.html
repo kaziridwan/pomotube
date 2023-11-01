@@ -253,6 +253,12 @@
       <button @click="loadVideoFromInput()">Use this</button>
     </p>
 
+    <p>
+      <label for="break_video_url">FOR BREAKTIME : youtube video/playlist url</label>
+      <input type="text" id="break_video_url" x-model="break_video_url" width="60%"/>
+      <button @click="loadBreakVideoFromInput()">Use this</button>
+    </p>
+
     <strong x-show="history.length > 0">Video history:</strong>
     <div id="history" x-show="history.length > 0">
       <template x-for="item in history" :key="item">
@@ -470,6 +476,7 @@ function data() {
     counter: null,
     timer_action: 'Start',
     video_url: 'https://www.youtube.com/watch?v=5yx6BWlEVcY', //ChillHop caffee
+    break_video_url: 'https://www.youtube.com/watch?v=MZhivjxcF-M', // play on breaktime
     start_text: '<i class="material-icons">play_arrow</i>',
     pause_text: '<i class="material-icons">pause</i>',
     history: [],
@@ -478,6 +485,9 @@ function data() {
     init() {
       if (window.localStorage.getItem('video_url')) {
         this.video_url = window.localStorage.getItem('video_url');
+      }
+      if (window.localStorage.getItem('break_video_url')) {
+        this.break_video_url = window.localStorage.getItem('break_video_url');
       }
       if (window.localStorage.getItem('history')) {
         this.history = JSON.parse(window.localStorage.getItem('history'));
@@ -529,6 +539,10 @@ function data() {
           } else {
             this.timer = this.break_duration;
             this.session = 'Break';
+            // updated logic
+            player.pauseVideo();
+            loadVideoByUrl(this.break_video_url);
+            player.playVideo();
           }
         } else {
           this.session = 'Focus';
@@ -553,7 +567,7 @@ function data() {
         this.original_window_title = document.title;
         this.counter = setInterval(() => {this.updateTimer();}, 100);
         this.timer_action = 'Pause'
-        if (this.session == "Focus") {
+        if (this.session == "Focus" || this.session == 'Break') {
           player.playVideo();
         }
       }
@@ -578,6 +592,12 @@ function data() {
         ? '<i class="material-icons">fullscreen_exit</i>' 
         : '<i class="material-icons">fullscreen</i>' 
       ;
+    },
+
+    loadBreakVideoFromInput() {
+      var url = document.getElementById('break_video_url').value.trim();
+      window.localStorage.setItem('break_video_url', url);
+      this.break_video_url = url;
     },
 
     loadVideoFromInput() {
